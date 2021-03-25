@@ -294,7 +294,7 @@
     let all_contents = null;
     let contents = null;
     let charts = new Map();
-    let globalMaxima = null;
+    let globalMaxima = [];
     let currentFilterSettings = new Map();
 
     let graphSettings = new Map();
@@ -436,17 +436,29 @@
         let currentFrame = filterDataByParameter('');
         statisticsTableBody.innerHTML = `
                 <tr>
-                <th scope="row">Runtime savings</th>
-                <td>
-                    ${currentFrame.map(item => item["total_est_exe_time_difference"].toFixed(2))}s
-                    (${currentFrame.map(item => item["total_est_exe_time_difference_relative"].toFixed(1))}%)
+                <th scope="row">
+                Runtime savings
+                <span class="fw-normal">`
+            + currentFrame.map(item => `${item["Measurement Label"]}`).reduce((acc, val) => acc + "<br>" + val, "")
+            + `
+                </span>
+                </th>
+                <td>`
+            + currentFrame.map(item => `${item["total_est_exe_time_difference"].toFixed(2)}s (${item["total_est_exe_time_difference_relative"].toFixed(1)}%)`).reduce((acc, val) => acc + "<br>" + val, "")
+            + `
                 </td>
                 </tr>
                 <tr>
-                <th scope="row">Global Best</th>
-                <td>
-                    ${globalMaxima.map(item => item["total_est_exe_time_difference"].toFixed(2))}s
-                    (${globalMaxima.map(item => item["total_est_exe_time_difference_relative"].toFixed(1))}%)
+                <th scope="row">
+                Global Best
+                <span class="fw-normal">`
+            + currentFrame.map(item => `${item["Measurement Label"]}`).reduce((acc, val) => acc + "<br>" + val, "")
+            + `
+                </span>
+                </th>
+                <td>`
+            + globalMaxima.map(item => `${item["total_est_exe_time_difference"].toFixed(2)}s (${item["total_est_exe_time_difference_relative"].toFixed(1)}%)`).reduce((acc, val) => acc + "<br>" + val, "")
+            + `
                 </td>
                 </tr>
             `;
@@ -786,6 +798,7 @@
         }
 
         average_host_runtimes.clear();
+        globalMaxima = [];
         let {tools, labels} = get_available_tools_and_labels();
         get_tools_and_labels_combinations(tools, labels).forEach(
             (combination) => {
@@ -795,6 +808,9 @@
                     .reduce((acc, value) => acc + parseFloat(value['total_time_on_host']), 0) / filtered_contents.length;
                 average_host_runtimes.set(combination, average_host_runtime);
 
+                let combination_maximum = filtered_contents.reduce((acc, value) => acc["total_est_exe_time_difference"] >= value["total_est_exe_time_difference"] ? acc : value);
+                globalMaxima.push(combination_maximum);
+
                 filtered_contents.forEach(row => {
                     let total_est_exe_time_difference = average_host_runtime - row['total_est_exe_time'];
                     row['total_est_exe_time_difference'] = total_est_exe_time_difference;
@@ -803,12 +819,7 @@
                 });
 
             }
-        )
-
-        // contents = contents.map(row => row.set('total_est_exe_time_difference', average_host_runtime - row.get('total_est_exe_time')));
-
-        let maximumDifference = contents.reduce((acc, value) => Math.max(acc, value["total_est_exe_time_difference"]), 0);
-        globalMaxima = contents.filter(row => row["total_est_exe_time_difference"] === maximumDifference);
+        );
 
         redrawGraphs();
         updateConfigurationOutput();
