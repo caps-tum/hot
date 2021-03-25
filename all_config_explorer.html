@@ -831,7 +831,7 @@
     $("#data-demo-button").click(function () {
         $("#loading-label").show();
         fetch("data/demo_data.csv")
-            .then(response => loadFiles(response))
+            .then(response => loadFiles(response.blob()))
             .catch(reason => { alert('Failed to load data due to reason: ' + reason); $("#loading-label").hide("fast")});
     });
     $("#data-custom-button").click(() => $("#inputFile").click());
