@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>High Dimensional Exploration and Optimization Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+</head>
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-lightning-charge-fill"></i> High Dimensional Exploration
+                and Optimization Tool</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            </div>
+        </div>
+    </nav>
+    <div class="row my-2">
+        <div class="col-md-8">
+            <h2 id="no-data-label" class="text-center my-4">No Data</h2>
+            <div id="loading-label" class="text-center my-4" style="display: none">
+                <div class="spinner-border text-primary mx-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <canvas id="config_chart_Frequency" class="config-chart" width="800" height="200"
+                    aria-label="Configuration Chart Output"
+                    role="img" style="display: none">
+                <p>Your browser does not support drawing charts. Sorry about that.</p>
+            </canvas>
+            <canvas id="config_chart_EU_count_multiplier" class="config-chart" width="800" height="200"
+                    aria-label="Configuration Chart Output" role="img" style="display: none">
+                <p>Your browser does not support drawing charts. Sorry about that.</p>
+            </canvas>
+            <canvas id="config_chart_L3_BW_multiplier" class="config-chart" width="800" height="200"
+                    aria-label="Configuration Chart Output"
+                    role="img" style="display: none">
+                <p>Your browser does not support drawing charts. Sorry about that.</p>
+            </canvas>
+            <canvas id="config_chart_Memory_BW" class="config-chart" width="800" height="200"
+                    aria-label="Configuration Chart Output"
+                    role="img" style="display: none">
+                <p>Your browser does not support drawing charts. Sorry about that.</p>
+            </canvas>
+            <canvas id="config_chart_PCIE_link" class="config-chart" width="800" height="200"
+                    aria-label="Configuration Chart Output"
+                    role="img" style="display: none">
+                <p>Your browser does not support drawing charts. Sorry about that.</p>
+            </canvas>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>
+                        <i class="bi bi-file-earmark-arrow-up"></i> Data
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <label for="data-demo-button" class="form-label">Load Advisor Data</label>
+                    <div class="btn-group mb-2" role="group" aria-label="Load Advisor Data">
+                        <button type="button" id="data-demo-button" class="btn btn-outline-primary">
+                            Load Demo Data
+                        </button>
+                        <button type="button" id="data-custom-button" class="btn btn-outline-primary">
+                            Load Custom Data
+                        </button>
+                    </div>
+                    <input class="form-control mb-2" type="file" id="inputFile" style="display: none">
+
+
+                    <label for="measurement-tool-select" class="form-label">Select Measurement Tool</label>
+                    <select class="form-select mb-2" aria-label="Measurement tool select" id="measurement-tool-select"
+                            disabled>
+                        <option selected>-</option>
+                    </select>
+
+                    <label for="measurement-label-select" class="form-label">Select Measurement Labels</label>
+                    <select multiple class="form-select mb-2" aria-label="Measurement label select"
+                            id="measurement-label-select"
+                            size="6"
+                            disabled>
+                        <option selected>-</option>
+                    </select>
+
+                    <label for="metric-select" class="form-label">Select Metric</label>
+                    <select class="form-select mb-2" aria-label="Select Metric" id="metric-select">
+                        <option value="runtime-savings-absolute">Runtime Savings (s)</option>
+                        <option selected value="runtime-savings-relative">Runtime Savings (%)</option>
+                        <option value="speedup">Speedup</option>
+                    </select>
+
+                    <div class="row mb-2">
+                        <label class="form-label" for="minSelectGroup">Min Value</label>
+                        <div id="minSelectGroup" class="btn-group" role="group" aria-label="Min Value Selection">
+
+                            <input type="radio" class="btn-check" name="minSelectRadio" id="minSelectFixed"
+                                   autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="minSelectFixed">Fixed</label>
+
+                            <input type="radio" class="btn-check" name="minSelectRadio" id="minSelectLocal"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-primary" for="minSelectLocal">Local</label>
+
+                            <input type="radio" class="btn-check" name="minSelectRadio" id="minSelectGlobal"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-primary" for="minSelectGlobal">Global</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="form-label" for="maxSelectGroup">Max Value</label>
+                        <div id="maxSelectGroup" class="btn-group" role="group" aria-label="Max Value Selection">
+
+                            <input type="radio" class="btn-check" name="maxSelectRadio" id="maxSelectFixed"
+                                   autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="maxSelectFixed">Fixed</label>
+
+                            <input type="radio" class="btn-check" name="maxSelectRadio" id="maxSelectLocal"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-primary" for="maxSelectLocal">Local</label>
+
+                            <input type="radio" class="btn-check" name="maxSelectRadio" id="maxSelectGlobal"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-primary" for="maxSelectGlobal">Global</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card my-2">
+                <div class="card-header">
+                    <h5>
+                        <i class="bi bi-gear"></i> Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table" style="word-break: break-all;">
+                        <thead>
+                        <tr>
+                            <th scope="col">Property</th>
+                            <th scope="col">Value</th>
+                        </tr>
+                        </thead>
+                        <tbody id="configuration-body">
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-primary float-end" data-bs-toggle="modal"
+                            data-bs-target="#optimization-modal" onclick="calculateCosts()">
+                        Optimize
+                    </button>
+                </div>
+            </div>
+            <div class="card my-2">
+                <div class="card-header">
+                    <h5>
+                        <i class="bi bi-graph-up"></i> Statistics
+                    </h5>
+                </div>
+                <div id="statistics-card-body" class="card-body">
+                    <table class="table" style="word-break: break-all;">
+                        <thead>
+                        <tr>
+                            <th scope="col">Statistic</th>
+                            <th scope="col">Value</th>
+                        </tr>
+                        </thead>
+                        <tbody id="statistics-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="optimization-modal" tabindex="-1" aria-labelledby="optimization-modal-title"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="optimization-modal-title">Optimization</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="card my-2">
+                                <div class="card-header">
+                                    <h5>
+                                        <i class="bi bi-sliders"></i> Settings
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <label for="optimizeMinRuntime" class="form-label">Minimum Runtime Savings
+                                        (%)</label>
+                                    <input class="form-control mb-2"
+                                           type="number" step="0.1" min="0" max="100"
+                                           id="optimizeMinRuntime" value="0" onchange="calculateCosts()">
+
+                                    <label for="optmizeCostFrequency" class="form-label">Frequency Cost per GHz</label>
+                                    <input class="form-control mb-2" type="number" step="0.01" id="optmizeCostFrequency"
+                                           value="1" onchange="calculateCosts()">
+                                    <label for="optimizeCostEUCount" class="form-label">Execution Unit Cost per
+                                        Unit</label>
+                                    <input class="form-control mb-2" type="number" step="0.01" id="optimizeCostEUCount"
+                                           value="1" onchange="calculateCosts()">
+                                    <label for="optimizeCostL3BW" class="form-label">L3 Bandwidth Cost per
+                                        Multiplier</label>
+                                    <input class="form-control mb-2" type="number" step="0.01" id="optimizeCostL3BW"
+                                           value="1" onchange="calculateCosts()">
+                                    <label for="optimizeCostMemBW" class="form-label">Memory Bandwidth Cost per
+                                        GB/s</label>
+                                    <input class="form-control mb-2" type="number" step="0.01" id="optimizeCostMemBW"
+                                           value="1" onchange="calculateCosts()">
+                                    <label for="optimizeCostPCIELink" class="form-label">PCIE Link Cost per GB/s</label>
+                                    <input class="form-control mb-2" type="number" step="0.01" id="optimizeCostPCIELink"
+                                           value="1" onchange="calculateCosts()">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card my-2">
+                                <div class="card-header">
+                                    <h5>
+                                        <i class="bi bi-gear"></i> Configuration
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table" style="word-break: break-all;">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">Property</th>
+                                            <th scope="col">Value</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="optimization-configuration-body">
+                                        </tbody>
+                                    </table>
+                                    <p>Configurations with parameter values of infinity are not included in
+                                        optimization.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button id="load-config" type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="applyBestConfig()">
+                        Load Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+<script src="https://gmousse.github.io/dataframe-js/dist/dataframe.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+        crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+    var DataFrame = dfjs.DataFrame;
+
+    var currentParameterDefaults = {
+        'Frequency': 1100000000.0,
+        'EU_count_multiplier': 1.0,
+        'L3_BW_multiplier': 1.0,
+        'Memory_BW': 24000000000.0,
+        'PCIE_link': 0.0,
+    }
+    var parameterUnits = {
+        'Frequency': ' GHz',
+        'EU_count_multiplier': 'x',
+        'L3_BW_multiplier': 'x',
+        'Memory_BW': ' GB/s',
+        'PCIE_link': ' GB/s',
+    }
+
+    let average_host_runtimes = new Map();
+    let availableParameters = ['Frequency', 'EU_count_multiplier', 'L3_BW_multiplier', 'Memory_BW', 'PCIE_link'];
+    let all_contents = null;
+    let contents = null;
+    let charts = new Map();
+    let globalMaxima = null;
+    let currentFilterSettings = new Map();
+
+    let graphSettings = new Map();
+    setGraphSettings('runtime-savings-relative');
+
+
+    function filterByParameterIfNecessary(row, parameter, graphParameter, currentParameterDefaults) {
+        if (parameter !== graphParameter) {
+            // If this isn't the parameter we want to graph, make sure the parameter's value is the same
+            return row[parameter] == currentParameterDefaults[parameter];
+        } else {
+            // If this is the parameter we want to graph, make sure we only look at the relevant sample
+            return row['Tested_Parameters'].indexOf(parameter) >= 0;
+        }
+    }
+
+    function getChart(graphParameter) {
+        return document.getElementById('config_chart_' + graphParameter);
+    }
+
+    function calculateCost(row, costs) {
+        return costs.Frequency * row.Frequency
+            + costs.EU_count_multiplier * row.EU_count_multiplier
+            + costs.L3_BW_multiplier * row.L3_BW_multiplier
+            + costs.Memory_BW * row.Memory_BW
+            + costs.PCIE_link * row.PCIE_link;
+    }
+
+    function calculateCosts() {
+        let minRuntimeSavings = $("#optimizeMinRuntime").val();
+        let costs = {
+            Frequency: $("#optmizeCostFrequency").val() / 1E9,
+            EU_count_multiplier: $("#optimizeCostEUCount").val(),
+            L3_BW_multiplier: $("#optimizeCostL3BW").val(),
+            Memory_BW: $("#optimizeCostMemBW").val() / 1E9,
+            PCIE_link: $("#optimizeCostPCIELink").val(),
+        }
+
+        try {
+            let bestConfig = contents
+                .filter(row => row['total_est_exe_time_difference_relative'] >= minRuntimeSavings)
+                .filter(row => availableParameters.every(parameter => row[parameter] != 0))
+                .reduce((acc, row) => calculateCost(acc, costs) < calculateCost(row, costs) ? acc : row);
+
+            document.getElementById("optimization-configuration-body").innerHTML =
+                availableParameters.map(parameter => `<tr>
+                <th scope="row">${parameter}</th>
+                <td>${mapDisplayCoordinateToLabel(bestConfig[parameter], -1, false, parameter)}</td>
+                </tr>`).reduce((acc, val) => acc + val)
+                + `<tr><th scope="row">Total Cost</th><td>${calculateCost(bestConfig, costs).toFixed(2)}</td></tr>`
+                + `<tr><th scope="row">Runtime Savings (%)</th><td>${bestConfig['total_est_exe_time_difference_relative'].toFixed(2)}</td></tr>`;
+
+            $("#load-config").removeClass("disabled");
+            return bestConfig;
+        } catch (err) {
+            // Infeasible
+            document.getElementById("optimization-configuration-body").innerHTML = "<tr><th scope='row'>Infeasible Settings</th></tr>";
+            $("#load-config").addClass("disabled");
+            return null;
+        }
+    }
+
+    function applyBestConfig() {
+        let bestConfig = calculateCosts();
+
+        availableParameters.forEach(parameter => {
+            currentParameterDefaults[parameter] = bestConfig[parameter];
+            console.log('Setting parameter ' + parameter + ' to ' + currentParameterDefaults[parameter]);
+        });
+        updateChartsWithCurrentDefaults();
+    }
+
+    function recalculateData(frequency_contents, graphParameter) {
+        let max_value = frequency_contents.reduce((accumulator, item) => Math.max(accumulator, item[graphParameter]), Number.MIN_VALUE);
+
+        let use_infinity = false;
+        let data = frequency_contents.map(row => {
+            if (row[graphParameter] == 0.0) {
+                use_infinity = true;
+                return {
+                    x: 1.25 * max_value,
+                    y: row[graphSettings.get('yAxisDisplayedSeries')],
+                    measurement_label: row['Measurement Label'],
+                    tool: row['Tool'],
+                };
+            }
+            return {
+                x: row[graphParameter],
+                y: row[graphSettings.get('yAxisDisplayedSeries')],
+                measurement_label: row['Measurement Label'],
+                tool: row['Tool'],
+            };
+        });
+        return {max_value, use_infinity, data};
+    }
+
+    function filterDataByParameter(graphParameter) {
+        return contents.filter(row =>
+            filterByParameterIfNecessary(row, 'Frequency', graphParameter, currentParameterDefaults)
+            && filterByParameterIfNecessary(row, 'EU_count_multiplier', graphParameter, currentParameterDefaults)
+            && filterByParameterIfNecessary(row, 'L3_BW_multiplier', graphParameter, currentParameterDefaults)
+            && filterByParameterIfNecessary(row, 'Memory_BW', graphParameter, currentParameterDefaults)
+            && filterByParameterIfNecessary(row, 'PCIE_link', graphParameter, currentParameterDefaults)
+        );
+    }
+
+    function mapDataCoordinateToDisplayCoordinate(dataCoordinate, maxValue) {
+        if (dataCoordinate == 0.0) {
+            return 1.25 * maxValue;
+        }
+        return dataCoordinate;
+    }
+
+    function isDisplayCoordinateInfinity(displayCoordinate, maxValue, useInfinity) {
+        return displayCoordinate == maxValue && useInfinity;
+    }
+
+    function mapDisplayCoordinateToDataCoordinate(displayCoordinate, maxValue, useInfinity) {
+        if (isDisplayCoordinateInfinity(displayCoordinate, maxValue, useInfinity)) {
+            return 0.0;
+        }
+        return displayCoordinate;
+    }
+
+    function updateConfigurationOutput() {
+        let tableBody = document.getElementById('configuration-body');
+        let output = '';
+        for (parameter of availableParameters) {
+            output += `
+            <tr>
+                <th scope="row">${parameter}</th>
+                <td>${mapDisplayCoordinateToLabel(currentParameterDefaults[parameter], 0.0, true, parameter) + parameterUnits[parameter]}</td>
+            </tr>
+            `;
+        }
+        tableBody.innerHTML = output;
+
+        let statisticsTableBody = document.getElementById('statistics-body');
+        let currentFrame = filterDataByParameter('');
+        statisticsTableBody.innerHTML = `
+                <tr>
+                <th scope="row">Runtime savings</th>
+                <td>
+                    ${currentFrame.map(item => item["total_est_exe_time_difference"].toFixed(2))}s
+                    (${currentFrame.map(item => item["total_est_exe_time_difference_relative"].toFixed(1))}%)
+                </td>
+                </tr>
+                <tr>
+                <th scope="row">Global Best</th>
+                <td>
+                    ${globalMaxima.map(item => item["total_est_exe_time_difference"].toFixed(2))}s
+                    (${globalMaxima.map(item => item["total_est_exe_time_difference_relative"].toFixed(1))}%)
+                </td>
+                </tr>
+            `;
+    }
+
+    function mapDisplayCoordinateToLabel(item, max_value, use_infinity, graphParameter) {
+        if (isDisplayCoordinateInfinity(item, max_value, use_infinity)) {
+            return '∞';
+        }
+        if (graphParameter === 'Frequency' || graphParameter === 'Memory_BW') {
+            return item / 1000000000.0;
+        }
+        return item;
+    }
+
+    // const cartesianProduct = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+
+    function* get_tools_and_labels_combinations_generator(tools, labels) {
+        for (const tool of tools) {
+            for (const label of labels) {
+                yield {
+                    'tool': tool,
+                    'measurement_label': label,
+                };
+            }
+        }
+    }
+
+    function get_tools_and_labels_combinations(tools, labels) {
+        return [...get_tools_and_labels_combinations_generator(tools, labels)];
+    }
+
+    function get_available_tools_and_labels() {
+        let tools = [...new Set(contents.map(row => row['Tool']))];
+        let labels = [...new Set(contents.map(row => row['Measurement Label']))];
+        return {tools, labels};
+    }
+
+    function filter_by_tool_label_combination(data, combination) {
+        return data.filter(row =>
+            row['tool'] == combination.tool
+            && row['measurement_label'] == combination.measurement_label
+        );
+    }
+
+    function updateChartsWithCurrentDefaults() {
+        let {tools, labels} = get_available_tools_and_labels();
+        let combinations = get_tools_and_labels_combinations(tools, labels);
+
+        for (let updateParameter of availableParameters) {
+            let newContents = filterDataByParameter(updateParameter)
+            let {max_value, use_infinity, data} = recalculateData(newContents, updateParameter);
+            let chart = charts.get(updateParameter);
+            combinations.map((combination, index) => {
+                chart.data.datasets[index].data = filter_by_tool_label_combination(data, combination);
+            });
+            chart.update();
+        }
+
+        updateConfigurationOutput();
+        console.log('Updated charts');
+    }
+
+    function calculateAxisBounds() {
+        let min = 0;
+        let max = 1;
+        let seriesName = graphSettings.get('yAxisDisplayedSeries');
+        switch (document.getElementById('minSelectGroup').querySelector(".btn-check:checked").id) {
+            case 'minSelectFixed':
+                min = 0;
+                break;
+            case 'minSelectLocal':
+                min = availableParameters
+                    .flatMap(parameter => filterDataByParameter(parameter))
+                    .reduce((accumulator, item) => Math.min(accumulator, item[seriesName]), Number.MAX_VALUE);
+                break;
+            case 'minSelectGlobal':
+                min = contents.reduce((accumulator, item) => Math.min(accumulator, item[seriesName]), Number.MAX_VALUE);
+                break;
+        }
+        switch (document.getElementById('maxSelectGroup').querySelector(".btn-check:checked").id) {
+            case 'maxSelectFixed':
+                max = 100;
+                break;
+            case 'maxSelectLocal':
+                max = availableParameters
+                    .flatMap(parameter => filterDataByParameter(parameter))
+                    .reduce((accumulator, item) => Math.max(accumulator, item[seriesName]), Number.MIN_VALUE);
+                break;
+            case 'maxSelectGlobal':
+                max = contents.reduce((accumulator, item) => Math.max(accumulator, item[seriesName]), Number.MIN_VALUE);
+                break;
+        }
+
+        return {min: min, max: max};
+    }
+
+    function redrawGraphs() {
+        for (let [key, chart] of charts.entries()) {
+            chart.destroy();
+        }
+        charts.clear();
+        let {tools, labels} = get_available_tools_and_labels();
+        let {min: yAxisLowerBound, max: yAxisUpperBound} = calculateAxisBounds();
+
+        for (let graphParameter of availableParameters) {
+            var data_contents = filterDataByParameter(graphParameter);
+            let canvas = getChart(graphParameter);
+            let context = canvas.getContext('2d');
+            let {max_value, use_infinity, data} = recalculateData(data_contents, graphParameter);
+
+
+            max_value = data.reduce((accumulator, item) => Math.max(accumulator, item['x']), Number.MIN_VALUE);
+            let min_value = data.reduce((accumulator, item) => Math.min(accumulator, item['x']), Number.MAX_VALUE);
+
+            let shadePoint = function (context, defaultColor) {
+                let index = context.dataIndex;
+                let value = context.dataset.data[index];
+                return mapDisplayCoordinateToDataCoordinate(value.x, max_value, use_infinity) == currentParameterDefaults[graphParameter]
+                    ? "#dc3545" : defaultColor;
+            }
+
+
+            let chart = new Chart(context, {
+                type: 'line',
+                data: {
+                    labels: data_contents.map(
+                        item => mapDisplayCoordinateToLabel(item[graphParameter], max_value, use_infinity, graphParameter)
+                    ),
+                    datasets: get_tools_and_labels_combinations(tools, labels).map((combination, index) => {
+                        let color = ["#428bca", "#5cb85c", "#d9534f", "#ffc107", "#343a40"][index % 5];
+                        return {
+                            // Combination[0] is tool, Combination[1] is label.
+                            // label: combination[0] + ", " + combination[1],
+                            label: combination.measurement_label.replace("-config-advisor", "").replace("-all", ""),
+                            data: filter_by_tool_label_combination(data, combination),
+                            pointRadius: 5,
+                            pointHitRadius: 5,
+                            pointHoverRadius: 5,
+                            pointHoverBorderWidth: 3,
+                            borderColor: color,
+                            pointBackgroundColor: context => shadePoint(context, color),
+                            pointBorderColor: context => shadePoint(context, color),
+                            backgroundColor: color + "10",
+                        };
+                    })
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: graphParameter,
+                    },
+                    scales: {
+                        xAxes: [
+                            {
+                                type: 'linear',
+                                ticks: {
+                                    callback: function (value, index, values) {
+                                        if (isDisplayCoordinateInfinity(value, max_value, use_infinity)) {
+                                            return '∞';
+                                        }
+                                        if (value >= 1000000) {
+                                            return value /= 1000000000;
+                                        }
+                                        return value;
+                                    },
+                                    min: min_value,
+                                    max: max_value,
+                                    maxTicksLimit: graphParameter === 'PCIE_link' ? 1 : 11,
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: graphParameter,
+                                }
+                            }
+                        ],
+                        yAxes: [
+                            {
+                                type: 'linear',
+                                ticks: {
+                                    min: yAxisLowerBound,
+                                    max: yAxisUpperBound,
+                                    // callback: function (value, index, values) {
+                                    //     if (graphSettings.get('yAxisRelativeLabels')) {
+                                    //         return Chart.formatters.ticks.numeric(
+                                    //             value / average_host_runtime, index, values
+                                    //         );
+                                    //     } else {
+                                    //         return Chart.formatters.ticks.numeric(
+                                    //             value, index, values
+                                    //         );
+                                    //     }
+                                    // }
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: graphSettings.get('yAxisDisplayedLabel'),
+                                }
+                            }
+                        ]
+                    },
+                    legend: {
+                        // display: false,
+                        position: 'right'
+                    },
+//                    devicePixelRatio: 4,
+                },
+            });
+
+            charts.set(graphParameter, chart);
+
+            canvas.onclick = function (event) {
+                let activeElements = chart.getElementAtEvent(event);
+
+                for (let activeElement of activeElements) {
+                    let index = activeElement._index;
+                    let datasetIndex = activeElement._datasetIndex;
+                    let dataValue = mapDisplayCoordinateToDataCoordinate(chart.data.datasets[datasetIndex].data[index].x, max_value, use_infinity);
+                    currentParameterDefaults[graphParameter] = dataValue;
+                    console.log('Setting parameter ' + graphParameter + ' to ' + currentParameterDefaults[graphParameter]);
+                    updateChartsWithCurrentDefaults();
+                }
+            };
+        }
+    }
+
+    function getSelectMultipleSelectedOptions(select) {
+        return [...select.options].filter(option => option.selected).map(option => option.value);
+    }
+
+    function setupSelectionBox(measurementLabelSelect, measurement_labels) {
+        let output = '';
+        for (let measurement_label of measurement_labels) {
+            output += `
+                    <option value="${measurement_label}">${measurement_label}</option>
+                `;
+        }
+        measurementLabelSelect.innerHTML = output;
+        measurementLabelSelect.removeAttribute('disabled');
+        let selectedLabel = measurement_labels[measurement_labels.length - 1];
+        $(measurementLabelSelect).val(selectedLabel);
+
+        currentFilterSettings.set(measurementLabelSelect.id, [measurementLabelSelect.value]);
+
+        measurementLabelSelect.onchange = function (event) {
+            currentFilterSettings.set(measurementLabelSelect.id, getSelectMultipleSelectedOptions(this));
+            reloadData(
+                currentFilterSettings.get('measurement-label-select'),
+                currentFilterSettings.get('measurement-tool-select')
+            );
+        };
+        return selectedLabel;
+    }
+
+    function setupMeasurementLabelSelect() {
+        let measurement_labels = all_contents.unique('Measurement Label').toArray();
+        let measurementLabelSelect = document.getElementById('measurement-label-select');
+        return setupSelectionBox(measurementLabelSelect, measurement_labels);
+    }
+
+    function setupMeasurementToolSelect() {
+        let measurement_tools = all_contents.unique('Tool').toArray();
+        let measurementToolSelect = document.getElementById('measurement-tool-select');
+        return setupSelectionBox(measurementToolSelect, measurement_tools);
+    }
+
+    function setGraphSettings(value) {
+        switch (value) {
+            case 'runtime-savings-absolute':
+                graphSettings.set('yAxisRelativeLabels', false);
+                graphSettings.set('yAxisDisplayedSeries', 'total_est_exe_time_difference');
+                graphSettings.set('yAxisDisplayedLabel', 'Runtime Savings (s)');
+                graphSettings.set('yAxisMaxValueFunction', () => [...average_host_runtimes.entries()].reduce((acc, value) => Math.max(acc, value[1]), 0));
+                break;
+            case 'runtime-savings-relative':
+                graphSettings.set('yAxisRelativeLabels', true);
+                graphSettings.set('yAxisDisplayedSeries', 'total_est_exe_time_difference_relative');
+                graphSettings.set('yAxisDisplayedLabel', 'Runtime Savings (%)');
+                graphSettings.set('yAxisMaxValueFunction', () => 100);
+                break;
+            case 'speedup':
+                graphSettings.set('yAxisRelativeLabels', false);
+                graphSettings.set('yAxisDisplayedSeries', 'total_est_speedup');
+                graphSettings.set('yAxisDisplayedLabel', 'Speedup');
+                graphSettings.set('yAxisMaxValueFunction', () => contents.reduce((acc, value) => Math.max(acc, value['total_est_speedup']), 1));
+                break;
+        }
+    }
+
+    function updateAxisLimits() {
+        let {min, max} = calculateAxisBounds();
+        charts.forEach(chart => {
+            chart.options.scales.yAxes[0].ticks.min = min;
+            chart.options.scales.yAxes[0].ticks.max = max;
+            chart.update();
+        });
+    }
+
+    function setupAuxiliaryControls() {
+        let relativeCheckbox = document.getElementById('metric-select');
+        $(relativeCheckbox).change(function (event) {
+            setGraphSettings(this.value);
+            reloadData(
+                currentFilterSettings.get('measurement-label-select'),
+                currentFilterSettings.get('measurement-tool-select')
+            );
+        });
+        $("#minSelectGroup").change(updateAxisLimits);
+        $("#maxSelectGroup").change(updateAxisLimits);
+    }
+
+    function reloadData(measurementLabels, toolNames) {
+        var start = performance.now();
+
+        Chart.defaults.global.defaultFontSize = 18;
+
+        contents = all_contents.toCollection().filter(row =>
+            measurementLabels.includes(row['Measurement Label'])
+            && toolNames.includes(row['Tool'])
+        );
+
+        console.log(
+            'Accepted ' + contents.length + '/' + all_contents.dim()[0] + ' rows of data ' +
+            'in ' + all_contents.dim()[1] + ' columns ' +
+            'using labels ' + measurementLabels +
+            ' and tools ' + toolNames + '.'
+        );
+
+        $("#loading-label").hide("fast");
+        if (contents.length === 0) {
+            $("#no-data-label").show("fast");
+            $(".config-chart").hide("fast");
+            return;
+        } else {
+            $("#no-data-label").hide("fast");
+            $(".config-chart").show("fast");
+        }
+
+        average_host_runtimes.clear();
+        let {tools, labels} = get_available_tools_and_labels();
+        get_tools_and_labels_combinations(tools, labels).forEach(
+            (combination) => {
+                let filtered_contents = contents
+                    .filter(row => row['Tool'] === combination.tool && row['Measurement Label'] === combination.measurement_label);
+                let average_host_runtime = filtered_contents
+                    .reduce((acc, value) => acc + parseFloat(value['total_time_on_host']), 0) / filtered_contents.length;
+                average_host_runtimes.set(combination, average_host_runtime);
+
+                filtered_contents.forEach(row => {
+                    let total_est_exe_time_difference = average_host_runtime - row['total_est_exe_time'];
+                    row['total_est_exe_time_difference'] = total_est_exe_time_difference;
+                    row['total_est_exe_time_difference_relative'] = (total_est_exe_time_difference / average_host_runtime) * 100;
+                    row['total_est_speedup'] = average_host_runtime / row['total_est_exe_time'];
+                });
+
+            }
+        )
+
+        // contents = contents.map(row => row.set('total_est_exe_time_difference', average_host_runtime - row.get('total_est_exe_time')));
+
+        let maximumDifference = contents.reduce((acc, value) => Math.max(acc, value["total_est_exe_time_difference"]), 0);
+        globalMaxima = contents.filter(row => row["total_est_exe_time_difference"] === maximumDifference);
+
+        redrawGraphs();
+        updateConfigurationOutput();
+
+        var stop = performance.now();
+        console.log('Updated view in ' + (stop - start) + 'ms.');
+    }
+
+    function loadFiles(file) {
+        $("#loading-label").show();
+        DataFrame.fromCSV(file).then(loadedContents => {
+            all_contents = loadedContents;
+            console.log('Loaded ' + all_contents.dim()[0] + ' rows');
+            let selectedLabel = setupMeasurementLabelSelect();
+            let selectedTool = setupMeasurementToolSelect();
+            setupAuxiliaryControls();
+            reloadData(selectedLabel, selectedTool);
+        });
+    }
+
+    $("#data-demo-button").click(function () {
+        $("#loading-label").show();
+        fetch("data/demo_data.csv")
+            .then(response => loadFiles(response))
+            .catch(reason => { alert('Failed to load data due to reason: ' + reason); $("#loading-label").hide("fast")});
+    });
+    $("#data-custom-button").click(() => $("#inputFile").click());
+    $("#inputFile").change(function () {
+        loadFiles(this.files[0]);
+    });
+
+</script>
+</body>
+</html>
+
+
