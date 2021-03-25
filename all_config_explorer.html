@@ -252,7 +252,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button id="load-config" type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="applyBestConfig()">
+                    <button id="load-config" type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                            onclick="applyBestConfig()">
                         Load Configuration
                     </button>
                 </div>
@@ -831,8 +832,12 @@
     $("#data-demo-button").click(function () {
         $("#loading-label").show();
         fetch("data/demo_data.csv")
-            .then(response => loadFiles(response.blob()))
-            .catch(reason => { alert('Failed to load data due to reason: ' + reason); $("#loading-label").hide("fast")});
+            .then(response => response.blob())
+            .then(data => loadFiles(data))
+            .catch(reason => {
+                alert('Failed to load data due to reason: ' + reason);
+                $("#loading-label").hide("fast")
+            });
     });
     $("#data-custom-button").click(() => $("#inputFile").click());
     $("#inputFile").change(function () {
