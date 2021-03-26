@@ -641,6 +641,8 @@
                                 ticks: {
                                     min: yAxisLowerBound,
                                     max: yAxisUpperBound,
+                                    autoSkip: true,
+                                    autoSkipPadding: 20,
                                     // callback: function (value, index, values) {
                                     //     if (graphSettings.get('yAxisRelativeLabels')) {
                                     //         return Chart.formatters.ticks.numeric(
@@ -664,7 +666,7 @@
                         // display: false,
                         position: 'right'
                     },
-//                    devicePixelRatio: 4,
+                   devicePixelRatio: 4,
                 },
             });
 
