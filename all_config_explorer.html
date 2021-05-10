@@ -571,6 +571,7 @@
             let context = canvas.getContext('2d');
             let {max_value, use_infinity, data} = recalculateData(data_contents, graphParameter);
 
+            console.log(`Redrawing graph ${graphParameter} with ${new Array(data_contents).length}/${contents.length} elements`);
 
             max_value = data.reduce((accumulator, item) => Math.max(accumulator, item['x']), Number.MIN_VALUE);
             let min_value = data.reduce((accumulator, item) => Math.min(accumulator, item['x']), Number.MAX_VALUE);
