@@ -299,6 +299,13 @@
     let globalMaxima = [];
     let currentFilterSettings = new Map();
 
+    // Set chart dpi resolution if specified via url param e.g. ?dpi=4
+    const dpiParam = new URLSearchParams(window.location.search).get('dpi');
+    const dpi = parseFloat(dpiParam);
+    if (!isNaN(dpi)) {
+      Chart.defaults.devicePixelRatio = dpi;
+    }
+    
     let graphSettings = new Map();
     setGraphSettings('runtime-savings-relative');
 
