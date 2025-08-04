@@ -303,7 +303,7 @@
     const dpiParam = new URLSearchParams(window.location.search).get('dpi');
     const dpi = parseFloat(dpiParam);
     if (!isNaN(dpi)) {
-      Chart.defaults.devicePixelRatio = dpi;
+      Chart.defaults.global.devicePixelRatio = dpi;
     }
     
     let graphSettings = new Map();
